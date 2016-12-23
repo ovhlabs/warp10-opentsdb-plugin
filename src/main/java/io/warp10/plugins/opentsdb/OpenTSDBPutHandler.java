@@ -106,9 +106,11 @@ public class OpenTSDBPutHandler extends AbstractHandler {
         byte[] body = OpenTSDBMetric.toBodyRequest(metrics);
         IOException err = sendToIngres(token, body);
 
-        if (null != err)
-            //System.out.println(err.toString());
-            System.out.println(err.getMessage());
+        if (null != err) {
+            System.out.println(err.toString());
+            response.sendError(500, "Fail to send your metrics to Ingres");
+            throw err;
+        }
     }
 
     /**
@@ -141,9 +143,9 @@ public class OpenTSDBPutHandler extends AbstractHandler {
             if (HttpServletResponse.SC_OK != conn.getResponseCode()) {
                 throw new IOException(conn.getResponseMessage());
             }
+            System.out.println(conn.getResponseCode());
         }
         catch (IOException e) {
-            System.out.println(e.toString());
             return e;
         }
         finally {
