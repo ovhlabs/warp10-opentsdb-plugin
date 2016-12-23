@@ -94,6 +94,7 @@ public class OpenTSDBPutHandler extends AbstractHandler {
 
         BufferedReader  requestBodyReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
         List<OpenTSDBMetric> metrics;
+        OpenTSDBResponse resBody = new OpenTSDBResponse();
         try {
             metrics= gson.fromJson(requestBodyReader, new TypeToken<List<OpenTSDBMetric>>(){}.getType());
         }
@@ -106,11 +107,16 @@ public class OpenTSDBPutHandler extends AbstractHandler {
         byte[] body = OpenTSDBMetric.toBodyRequest(metrics);
         IOException err = sendToIngres(token, body);
 
+        resBody.setFailed(0);
+        resBody.setSuccess(metrics.size());
+
         if (null != err) {
-            System.out.println(err.toString());
-            response.sendError(500, "Fail to send your metrics to Ingres");
-            throw err;
+            resBody.setFailed(metrics.size());
+            resBody.setSuccess(0);
         }
+
+        response.addHeader("Content-Type", "application/json");
+        response.getWriter().print(gson.toJson(resBody));
     }
 
     /**
