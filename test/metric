@@ -1,0 +1,9 @@
+{
+  "metric": "os.cpu",
+  "timestamp": 1,
+  "value": 5,
+  "tags": {
+    "a": "b",
+    "c": "d"
+  }
+}

@@ -1,10 +1,6 @@
 package io.warp10.plugins.opentsdb;
-/**
- * Created by rcoligno on 12/22/16.
- */
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
+import java.io.*;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,19 +13,39 @@ import com.google.gson.Gson;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import io.warp10.continuum.Configuration;
+import io.warp10.continuum.store.Constants;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.Request;
 
+/**
+ * Created by rcoligno on 12/22/16.
+ */
 public class OpenTSDBPutHandler extends AbstractHandler {
 
-    private final URL url;
-    private static final Type OpenTSDBMetricListType = new TypeToken<List<OpenTSDBMetric>>(){}.getType();
-    private Gson gson = new GsonBuilder()
-            .registerTypeAdapter(OpenTSDBMetricListType, new OpenTSDBMetricTypeAdaptater())
-            .create();
+    private URL             url;
+    private Gson            gson = new GsonBuilder()
+      .registerTypeAdapter(OpenTSDBMetricListType, new OpenTSDBMetricTypeAdaptater())
+      .create();
+    private static final Type       OpenTSDBMetricListType = new TypeToken<List<OpenTSDBMetric>>(){}.getType();
     // Base64 regexp
-    private static final Pattern authPattern = Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
+    private static final Pattern    authPattern = Pattern.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
 
+    /**
+     * Constructor with default Warp10 endpoint
+     */
+    public OpenTSDBPutHandler() {
+        try {
+            this.url = new URL("http://127.0.0.1:8080/api/v0/update");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Constructor with custom Warp10 endpoint
+     * @param url
+     */
     public OpenTSDBPutHandler(URL url) {
         this.url = url;
     }
@@ -75,28 +91,39 @@ public class OpenTSDBPutHandler extends AbstractHandler {
         } else {
             token = requestAuth;
         }
-        System.out.println(token);
 
-        BufferedReader reader   = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        BufferedReader  requestBodyReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        List<OpenTSDBMetric> metrics;
         try {
-            List<OpenTSDBMetric> metrics = gson.fromJson(reader, new TypeToken<List<OpenTSDBMetric>>(){}.getType());
-            System.out.println(metrics.toString());
+            metrics= gson.fromJson(requestBodyReader, new TypeToken<List<OpenTSDBMetric>>(){}.getType());
         }
         catch (Exception e) {
             System.out.println(e.toString());
+            response.sendError(400, "malformed JSON body : <a href=\"http://jsonlint.com\">http://jsonlint.com</a>");
+            return;
         }
-        System.out.println("end");
+
+        byte[] body = OpenTSDBMetric.toBodyRequest(metrics);
+        IOException err = sendToIngres(token, body);
+
+        if (null != err)
+            //System.out.println(err.toString());
+            System.out.println(err.getMessage());
     }
 
-    private boolean sendToIngres (String token){
-
+    /**
+     * Send GTS to Warp10 Ingres
+     * @param token
+     * @return
+     */
+    private IOException sendToIngres (String token, byte[] body){
+        System.out.println("token: " + token);
         HttpURLConnection conn = null;
 
         try {
-            // url = plugin.opentsdb.warp10.endpoint
             conn = (HttpURLConnection) url.openConnection();
 
-            /*conn.setDoOutput(true);
+            conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty(Constants.getHeader(Configuration.HTTP_HEADER_UPDATE_TOKENX), token);
@@ -108,32 +135,22 @@ public class OpenTSDBPutHandler extends AbstractHandler {
             //GZIPOutputStream out = new GZIPOutputStream(os);
             PrintWriter pw = new PrintWriter(os);
 
-            BufferedReader br = request.getReader();
-
-            while(true) {
-                String line = br.readLine();
-                if (null == line) {
-                    break;
-                }
-                parse(pw,line,labels);
-            }
-
-            br.close();
-
-            pw.flush();
+            os.write(body);
+            os.flush();
 
             if (HttpServletResponse.SC_OK != conn.getResponseCode()) {
                 throw new IOException(conn.getResponseMessage());
-            }*/throw new IOException(conn.getResponseMessage());
+            }
         }
         catch (IOException e) {
-            return false;
+            System.out.println(e.toString());
+            return e;
         }
         finally {
             if (null != conn) {
                 conn.disconnect();
             }
-            return false;
+            return null;
         }
     }
 }

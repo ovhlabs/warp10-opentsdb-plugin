@@ -1,6 +1,12 @@
 package io.warp10.plugins.opentsdb;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Created by rcoligno on 12/23/16.
@@ -68,5 +74,41 @@ public class OpenTSDBMetric {
      */
     public String toString() {
         return "Metric: " + metric + " ts: " + timestamp + " tags: " + tags.toString() + " value: " + value;
+    }
+
+    /**
+     * Serialise object into Warp10 input format
+     * @return
+     */
+    public String toGTS() {
+
+        String gts = this.timestamp;
+        // No Geo support
+        gts += "// " + metric + "{";
+        if (null != tags && tags.size() > 0) {
+
+            List<String> warpLabels = new ArrayList<>();
+            for (Map.Entry<String, Object> tag : tags.entrySet())
+            {
+                warpLabels.add(tag.getKey() + "=" + tag.getValue());
+            }
+            gts += String.join(",", warpLabels);
+        }
+
+        return gts + "} " + value;
+    }
+
+    /**
+     * Join a List of Metrics Object into HTTP request reader
+     * @param metrics
+     * @return
+     */
+    public static byte[] toBodyRequest(List<OpenTSDBMetric> metrics) {
+
+        List<String> bodyEntries = new ArrayList<>();
+        for( OpenTSDBMetric metric : metrics) {
+            bodyEntries.add(metric.toGTS());
+        }
+        return String.join("\n", bodyEntries).getBytes();
     }
 }
