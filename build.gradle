@@ -12,8 +12,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 archivesBaseName = 'warp10-opentsdb-plugin'
-def pushgatewayVersion = '1.0.0'
-version = pushgatewayVersion
+version = '1.0.0'
 group = 'io.warp10'
 
 sourceCompatibility = 1.7
@@ -39,7 +38,6 @@ repositories {
         url 'https://dl.bintray.com/hbs/maven'
     }
 
-    // bedatadriven - http://www.renjin.org/#downloads
     maven {
         url "http://nexus.bedatadriven.com/content/groups/public/"
     }
@@ -74,7 +72,7 @@ idea {
 shadowJar {
     manifest {
         attributes(
-                'Main-Class': 'io.warp10.plugins.opentsdb.PushGatewayHandler'
+                'Main-Class': 'io.warp10.plugins.opentsdb.OpenTSDBPutHandler'
         )
     }
     relocate 'org', 'io.warp10.quantum.org'
