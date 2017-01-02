@@ -1,12 +1,8 @@
 package io.warp10.plugins.opentsdb;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 /**
  * Created by rcoligno on 12/23/16.
@@ -14,59 +10,28 @@ import java.util.StringTokenizer;
 public class OpenTSDBMetric {
 
     private String              metric;
-    private String              timestamp;
+    private Long                timestamp;
+    private String              timestampWarp;
     private String              value;
     private Map<String, Object> tags;
 
-
-    /**
-     * Metric Name assignation
-     * @param metric
-     */
-    public void setMetric(String metric) {
-        this.metric = metric;
-    }
-
     /**
      * Metric Timestamp assignation
-     * @param timestamp
      */
-    public void setTimestamp(int timestamp) {
-        this.timestamp = Integer.toString(timestamp);
+    public void formatTimestamp() {
+	    String str = Long.toString(this.timestamp);
+        // If less than 2^32, assume it's in seconds
+        // (in millis that would be Thu Feb 19 18:02:47 CET 1970)
+        if (this.timestamp < 0xFFFFFFFF) {
+            str += "000000";
+            System.out.println("sec");
+        } else {
+            str += "000";
+            System.out.println("milliSec");
+        }
+        System.out.println(str);
+        this.timestampWarp = str += "000";
     }
-
-    /**
-     * Metric Value assignation
-     * @param value
-     */
-    public void setValue(int value) {
-        this.value = Integer.toString(value);
-    }
-
-    /**
-     * Metric value assignation
-     * @param value
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    /**
-     * Metric value assignation
-     * @param value
-     */
-    public void setValue(float value) {
-        this.value = Float.toString(value);
-    }
-
-    /**
-     * Metric list of Tags assignation
-     * @param tags
-     */
-    public void setTags(Map<String, Object> tags) {
-        this.tags = tags;
-    }
-
 
     /**
      * Friendly console output
@@ -82,7 +47,8 @@ public class OpenTSDBMetric {
      */
     public String toGTS() {
 
-        String gts = this.timestamp;
+        this.formatTimestamp();
+        String gts = this.timestampWarp;
         // No Geo support
         gts += "// " + metric + "{";
         if (null != tags && tags.size() > 0) {
@@ -94,7 +60,7 @@ public class OpenTSDBMetric {
             }
             gts += String.join(",", warpLabels);
         }
-
+        System.out.println(gts + "} " + value);
         return gts + "} " + value;
     }
 

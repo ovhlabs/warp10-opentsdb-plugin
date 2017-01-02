@@ -12,7 +12,8 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 archivesBaseName = 'warp10-opentsdb-plugin'
-version = '1.0.0'
+def opentsdbHandlerVersion = '1.0.0'
+version = opentsdbHandlerVersion
 group = 'io.warp10'
 
 sourceCompatibility = 1.7

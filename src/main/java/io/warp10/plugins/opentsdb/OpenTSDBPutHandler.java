@@ -61,7 +61,6 @@ public class OpenTSDBPutHandler extends AbstractHandler {
         }
 
         String path = request.getRequestURI();
-        System.out.println(path);
         if (!path.equals("/api/put")) {
             response.sendError(404, "Bad url");
             return;
@@ -125,7 +124,6 @@ public class OpenTSDBPutHandler extends AbstractHandler {
      * @return
      */
     private IOException sendToIngres (String token, byte[] body){
-        System.out.println("token: " + token);
         HttpURLConnection conn = null;
 
         try {
