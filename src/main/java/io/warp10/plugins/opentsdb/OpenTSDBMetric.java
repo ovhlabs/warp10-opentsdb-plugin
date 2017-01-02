@@ -24,12 +24,9 @@ public class OpenTSDBMetric {
         // (in millis that would be Thu Feb 19 18:02:47 CET 1970)
         if (this.timestamp < 0xFFFFFFFF) {
             str += "000000";
-            System.out.println("sec");
         } else {
             str += "000";
-            System.out.println("milliSec");
         }
-        System.out.println(str);
         this.timestampWarp = str += "000";
     }
 
@@ -60,7 +57,6 @@ public class OpenTSDBMetric {
             }
             gts += String.join(",", warpLabels);
         }
-        System.out.println(gts + "} " + value);
         return gts + "} " + value;
     }
 

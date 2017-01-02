@@ -147,7 +147,6 @@ public class OpenTSDBPutHandler extends AbstractHandler {
             if (HttpServletResponse.SC_OK != conn.getResponseCode()) {
                 throw new IOException(conn.getResponseMessage());
             }
-            System.out.println(conn.getResponseCode());
         }
         catch (IOException e) {
             return e;
