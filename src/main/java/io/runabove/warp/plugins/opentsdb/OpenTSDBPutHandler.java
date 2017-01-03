@@ -1,4 +1,4 @@
-package io.warp10.plugins.opentsdb;
+package io.runabove.warp.plugins.opentsdb;
 
 import java.io.*;
 import java.lang.reflect.Type;

@@ -1,4 +1,4 @@
-package io.warp10.plugins.opentsdb;
+package io.runabove.warp.plugins.opentsdb;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;

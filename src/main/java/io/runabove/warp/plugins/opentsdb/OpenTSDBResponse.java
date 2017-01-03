@@ -1,4 +1,4 @@
-package io.warp10.plugins.opentsdb;
+package io.runabove.warp.plugins.opentsdb;
 
 /**
  * Created by rcoligno on 12/23/16.

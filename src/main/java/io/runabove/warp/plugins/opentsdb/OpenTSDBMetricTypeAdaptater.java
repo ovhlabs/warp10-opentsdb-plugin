@@ -1,9 +1,8 @@
-package io.warp10.plugins.opentsdb;
+package io.runabove.warp.plugins.opentsdb;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

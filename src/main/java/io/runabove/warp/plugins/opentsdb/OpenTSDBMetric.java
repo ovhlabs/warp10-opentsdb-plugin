@@ -1,5 +1,6 @@
-package io.warp10.plugins.opentsdb;
+package io.runabove.warp.plugins.opentsdb;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,11 +52,16 @@ public class OpenTSDBMetric {
         if (null != tags && tags.size() > 0) {
 
             List<String> warpLabels = new ArrayList<>();
-            for (Map.Entry<String, Object> tag : tags.entrySet())
-            {
-                warpLabels.add(tag.getKey() + "=" + tag.getValue());
+            try {
+                for (Map.Entry<String, Object> tag : tags.entrySet()) {
+                    warpLabels.add(URLEncoder.encode(tag.getKey(), "UTF-8")
+                           + "=" + URLEncoder.encode((String) tag.getValue(), "UTF-8"));
+                }
+                gts += String.join(",", warpLabels).replace("+", "%20");
             }
-            gts += String.join(",", warpLabels);
+            catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
         }
         return gts + "} " + value;
     }
